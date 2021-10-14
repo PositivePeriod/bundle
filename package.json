@@ -1,0 +1,53 @@
+{
+    "name": "bundle",
+    "version": "1.0.0",
+    "description": "Turn-based Strategy Game",
+    "main": "code/server/server.js",
+    "scripts": {
+        "lint": "eslint --fix --cache --ext .js,.jsx code/",
+        "build": "webpack --config webpack.prod.js",
+        "develop": "cross-env NODE_ENV=development node code/server/server.js",
+        "devloop": "nodemon --watch bundle --exec cross-env NODE_ENV=development node code/server/server.js",
+        "production": "cross-env NODE_ENV=production node code/server/server.js",
+        "test": "jest"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/PositivePeriod/bundle.git"
+    },
+    "author": "Jeuk Hwang",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/PositivePeriod/bundle/issues"
+    },
+    "homepage": "https://github.com/PositivePeriod/bundle#readme",
+    "dependencies": {
+        "cookie-parser": "^1.4.5",
+        "cors": "^2.8.5",
+        "dotenv": "^10.0.0",
+        "express": "^4.17.1",
+        "html-webpack-plugin": "^5.3.2",
+        "mini-css-extract-plugin": "^2.4.2",
+        "nodemailer": "^6.7.0",
+        "optimize-css-assets-webpack-plugin": "^6.0.1",
+        "pg": "^8.7.1",
+        "shortid": "^2.2.16",
+        "socket.io": "^4.2.0",
+        "socket.io-client": "^4.2.0",
+        "terser-webpack-plugin": "^5.2.4",
+        "webpack": "^5.58.2",
+        "webpack-dev-middleware": "^5.2.1",
+        "webpack-merge": "^5.8.0"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.15.8",
+        "@babel/preset-env": "^7.15.8",
+        "babel-eslint": "^10.1.0",
+        "babel-loader": "^8.2.2",
+        "cross-env": "^7.0.3",
+        "eslint": "^7.32.0",
+        "eslint-config-airbnb-base": "^14.2.1",
+        "eslint-plugin-import": "^2.25.2",
+        "nodemon": "^2.0.13"
+    }
+}
