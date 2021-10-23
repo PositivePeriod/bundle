@@ -6,15 +6,17 @@ class LocalDB {
     constructor() {
         if (!LocalDB.singleton) {
             this.database = new Map();
-            this.initMasterAccount();
+            this.initAccount();
             LocalDB.singleton = this;
         }
         return LocalDB.singleton;
     }
 
-    initMasterAccount() {
+    initAccount() {
         const developer = { playerName: "DEVELOPER", playerID: process.env.DEVELOP_PLAYERID };
         this.setPlayer(developer);
+        this.setPlayer({ playerName: "pop", playerID: "oMktTEz7K_rpB2u2XSl_w" });
+        this.setPlayer({ playerName: "opo", playerID: "wh79rPbY7LrEimtuVJ79Z" });
     }
 
     // eslint-disable-next-line class-methods-use-this, no-console
