@@ -1,0 +1,13 @@
+{
+    "name": "standard",
+    "width": 5,
+    "height": 5,
+    "player": 2,
+    "data": [
+        "A11 A11 A11 A11 A11",
+        "N00 N00 N00 N00 N00",
+        "N00 N00 N00 N00 N00",
+        "N00 N00 N00 N00 N00",
+        "B12 B12 B12 B12 B12"
+    ]
+}

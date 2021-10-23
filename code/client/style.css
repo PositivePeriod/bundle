@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700&display=swap');
+* {
+    font-family: 'Noto Sans KR', sans-serif;
+}
+.multiline {
+    white-space: pre-wrap;
+}
+
+.hidden {
+    display: none;
+}
+
+.center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translateY(-50%) translateX(-50%);
+    transform: translateY(-50%) translateX(-50%);
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    /* overflow: hidden; */
+    /* overscroll-behavior: none; */
+}
+
+button {
+    margin: 3px;
+    padding: 3px;
+}
+
+a {
+    /* display: inline; */
+    /* text-decoration: none; */
+    color: black;
+    /* font-size: 24px; */
+}
+
+#game-map {
+    table-layout: fixed;
+    border-spacing: 10px;
+    user-select: none;
+}
+
+#game-map td {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    text-align: center;
+    color: white;
+    opacity: 1;
+    padding: 0;
+    overflow: hidden;
+    font-size: 16px;
+    /* border: 1px solid black; */
+    /* text-shadow: 0 0 2px black; */
+    /* white-space: nowrap; */
+    /* background-size: 40px 40px; */
+}
+
+#game-map td .selected {
+    position: relative;
+    z-index: 20;
+    border: 1px solid white;
+}
+
+#game-map td .selected:hover {
+    cursor: pointer;
+}
+
+.log{
+    background-color: black;
+    color: white;
+    overflow-y: scroll;
+    height: 150px;
+}

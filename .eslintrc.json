@@ -9,8 +9,11 @@
         "airbnb-base"
     ],
     "parserOptions": {
-        "ecmaVersion": "latest",
+        "ecmaVersion": 6,
         "sourceType": "module"
+        // "ecmaFeatures": {
+        //     "modules": true
+        // }
     },
     "rules": {
         "semi": [
@@ -23,7 +26,10 @@
         ],
         "indent": [
             "error",
-            4
+            4,
+            {
+                "SwitchCase": 1
+            }
         ],
         "no-plusplus": "off",
         "object-curly-newline": [
@@ -36,6 +42,16 @@
             "error",
             "windows"
         ],
-        "no-new": "off"
+        "no-new": "off",
+        "import/extensions": [
+            "error",
+            "ignorePackages",
+            {
+                "js": "always",
+                "jsx": "always",
+                "ts": "never",
+                "tsx": "never"
+            }
+        ]
     }
 }

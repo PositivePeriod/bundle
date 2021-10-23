@@ -1,6 +1,3 @@
-const { range } = require("../../shared/util.js");
-const { UpPawn, DownPawn } = require("../game/piece/pawn.js");
-
 class ServerGameBoard {
     constructor(width, height, socketA, socketB) {
         this.width = width;
@@ -18,8 +15,6 @@ class ServerGameBoard {
         for (let i = 0; i < this.width; i++) {
             this.map[i][0] = "A";
             this.map[i][this.height - 1] = "B";
-            // this.map[i][0] = new UpPawn(this.players[0], i, 0);
-            // this.map[i][this.height - 1] = new DownPawn(this.players[1], i, 0);
         }
         this.ended = false;
     }
@@ -101,39 +96,35 @@ class ServerGameBoard {
         return bundle;
     }
 
-    DFS(i, j, visited, playerName, group) {
+    DFS(i, j, visited, name, group) {
         if (i >= 0 && i <= (this.width - 1) && j >= 0 && j <= (this.height - 1)) {
-            if (!visited[i][j] && this.map[i][j] === playerName) {
-                // eslint-disable-next-line no-param-reassign
+            if (!visited[i][j] && this.map[i][j] === name) {
                 visited[i][j] = true;
                 group.push([i, j]);
-                this.DFS(i + 1, j, visited, playerName, group);
-                this.DFS(i - 1, j, visited, playerName, group);
-                this.DFS(i, j + 1, visited, playerName, group);
-                this.DFS(i, j - 1, visited, playerName, group);
+                this.DFS(i + 1, j, visited, name, group);
+                this.DFS(i - 1, j, visited, name, group);
+                this.DFS(i, j + 1, visited, name, group);
+                this.DFS(i, j - 1, visited, name, group);
             }
         }
     }
 
     findBundleMove(player, bundle) {
-        const validMove = (x, y) => this.checkRange(x, y) && this.map[x][y] === null;
         const moves = [];
-        bundle.forEach(([x, y]) => {
-            player.dirs.forEach(([dx, dy]) => {
-                if (validMove(x + dx, y + dy)) { moves.push({ piece: [x, y], dir: [dx, dy] }); }
-            });
-        });
-        // const move = null;
-        // moves.push(...move)
+        for (const [x, y] of bundle) {
+            for (const [dx, dy] of player.dirs) {
+                if (this.checkRange(x + dx, y + dy) && this.map[x + dx][y + dy] === null) {
+                    moves.push({ piece: [x, y], dir: [dx, dy] });
+                }
+            }
+        }
         return moves;
     }
 
     movePiece(player, piece, dir) {
-        const validFrom = (x, y) => this.checkRange(x, y) && this.map[x][y] === player.name;
-        const validTo = (x, y) => this.checkRange(x, y) && this.map[x][y] === null;
         const [x, y] = piece;
         const [dx, dy] = dir;
-        if (validFrom(x, y) && validTo(x + dx, y + dy)) {
+        if (this.checkRange(x, y) && this.checkRange(x + dx, y + dy) && this.map[x][y] === player.name && this.map[x + dx][y + dy] === null) {
             this.map[x][y] = null;
             this.map[x + dx][y + dy] = player.name;
         }
@@ -155,8 +146,9 @@ class ServerGameBoard {
 
     checkBaseEnter(player) {
         const y = player.name === "B" ? 0 : this.height - 1;
-        return range(this.width).some((i) => this.map[i][y] === player.name);
+        for (let i = 0; i < this.width; i++) { if (this.map[i][y] === player.name) { return true; } }
+        return false;
     }
 }
 
-module.exports = { ServerGameBoard };
+module.exports = ServerGameBoard;

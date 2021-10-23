@@ -19,3 +19,17 @@ https://www.postgresql.org/ftp/pgadmin/pgadmin4/v6.0/windows/
 https://devcenter.heroku.com/articles/heroku-postgresql
 https://devcenter.heroku.com/articles/postgres-logs-errors
 https://tableplus.com/blog/2018/04/getting-started-with-tableplus.html
+
+### TODO
+Improve design; especially mobile
+Give up button - surrender
+Add more piece + map / map editor
+Add timer - game death
+Add leaderboard, ranking, tier
+stable connection between server
+server error handling
+Game replay - stringify; decode; encode
+
+Add notice board; for alert contest + community
+Design, logo, icon, badge, tier, 
+Gtag - google analytics

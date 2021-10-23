@@ -1,5 +1,5 @@
 const MSG = Object.freeze({
-    CONNECT_SERVER: "connection",
+    CONNECT_SERVER: "connect",
     SET_USERID: "setUSERID",
     SET_USERNAME: "setUSERNAME",
 
