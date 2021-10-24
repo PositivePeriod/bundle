@@ -1,4 +1,5 @@
-const { range } = require("../../shared/util.js");
+const { range, Array2D } = require("../../shared/util.js");
+const { NullPiece } = require("../game/piece/nullPiece.js");
 const { UpPawn, DownPawn } = require("../game/piece/pawn.js");
 
 class ServerGameBoard {
@@ -8,20 +9,50 @@ class ServerGameBoard {
 
         this.turn = 1;
         this.players = [
-            { name: "A", dirs: [[1, 0], [-1, 0], [0, 1]], pieces: this.width, socket: socketA, playerName: socketA.data.playerName, state: null },
-            { name: "B", dirs: [[1, 0], [-1, 0], [0, -1]], pieces: this.width, socket: socketB, playerName: socketB.data.playerName, state: null },
+            {
+                name: "A",
+                dirs: [[1, 0], [-1, 0], [0, 1]],
+                pieces: this.width,
+                socket: socketA,
+                playerName: socketA.data.playerName,
+                state: null,
+            },
+            {
+                name: "B",
+                dirs: [[1, 0], [-1, 0], [0, -1]],
+                pieces: this.width,
+                socket: socketB,
+                playerName: socketB.data.playerName,
+                state: null,
+            },
         ];
-        this.map = Array.from(Array(this.width), () => new Array(this.height).fill(null));
-        this.colorMap = Array.from(Array(this.width), () => new Array(this.height).fill(null));
+        this.nameToPlayerName = new Map(
+            this.players.map((player) => [player.name, player.playerName]),
+        );
+        this.nameToPlayerName.set(null, null);
+
+        this.players.forEach((player) => { player.socket.data.name = player.name; });
+        this.map = Array2D(this.width, this.height,
+            ((Piece) => new Piece()).bind(null, NullPiece));
+        this.colorMap = Array2D(this.width, this.height);
         // left bottom (0,0), right bottom(width-1,0)
         // left top (0,height-1), right top(width-1,height-1)
+
         for (let i = 0; i < this.width; i++) {
-            this.map[i][0] = "A";
-            this.map[i][this.height - 1] = "B";
-            // this.map[i][0] = new UpPawn(this.players[0], i, 0);
-            // this.map[i][this.height - 1] = new DownPawn(this.players[1], i, 0);
+            this.map[i][0] = new UpPawn("A", i, 0);
+            this.map[i][this.height - 1] = new DownPawn("B", i, this.height - 1);
         }
         this.ended = false;
+    }
+
+    show() {
+        return {
+            turn: this.turn,
+            playerMap: this.map.map(
+                (row) => row.map((cell) => cell.name),
+            ),
+            colorMap: this.colorMap,
+        };
     }
 
     currentState() {
@@ -35,14 +66,14 @@ class ServerGameBoard {
         };
     }
 
-    win(playerName) {
-        const winner = this.players.find((player) => player.playerName === playerName);
+    win(name) {
+        const winner = this.players.find((player) => player.name === name);
         winner.state = true;
         return this.currentState();
     }
 
-    lose(playerName) {
-        const loser = this.players.find((player) => player.playerName === playerName);
+    lose(name) {
+        const loser = this.players.find((player) => player.name === name);
         loser.state = false;
         return this.currentState();
     }
@@ -54,7 +85,7 @@ class ServerGameBoard {
     color(IColor, youColor) {
         for (let i = 0; i < this.width; i++) {
             for (let j = 0; j < this.height; j++) {
-                this.colorMap[i][j] = `${this.map[i][j] === this.I.name ? IColor : youColor}-${this.map[i][j]}`;
+                this.colorMap[i][j] = `${this.map[i][j].name === this.I.name ? IColor : youColor}-${this.map[i][j].name}`;
             }
         }
     }
@@ -86,7 +117,7 @@ class ServerGameBoard {
         const pieces = [];
         for (let i = 0; i < this.width; i++) {
             for (let j = 0; j < this.height; j++) {
-                if (this.map[i][j] === player.name) { pieces.push([i, j]); }
+                if (this.map[i][j].name === player.name) { pieces.push([i, j]); }
             }
         }
         return pieces;
@@ -97,55 +128,53 @@ class ServerGameBoard {
         if (this.map[x][y] === null) { return []; }
         const visited = Array.from(Array(this.width), () => new Array(this.height).fill(false));
         const bundle = [];
-        this.DFS(x, y, visited, this.map[x][y], bundle);
+        this.DFS(x, y, visited, this.map[x][y].name, bundle);
         return bundle;
     }
 
-    DFS(i, j, visited, playerName, group) {
+    DFS(i, j, visited, name, group) {
         if (i >= 0 && i <= (this.width - 1) && j >= 0 && j <= (this.height - 1)) {
-            if (!visited[i][j] && this.map[i][j] === playerName) {
+            if (!visited[i][j] && this.map[i][j]?.name === name) {
                 // eslint-disable-next-line no-param-reassign
                 visited[i][j] = true;
                 group.push([i, j]);
-                this.DFS(i + 1, j, visited, playerName, group);
-                this.DFS(i - 1, j, visited, playerName, group);
-                this.DFS(i, j + 1, visited, playerName, group);
-                this.DFS(i, j - 1, visited, playerName, group);
+                this.DFS(i + 1, j, visited, name, group);
+                this.DFS(i - 1, j, visited, name, group);
+                this.DFS(i, j + 1, visited, name, group);
+                this.DFS(i, j - 1, visited, name, group);
             }
         }
     }
 
     findBundleMove(player, bundle) {
-        const validMove = (x, y) => this.checkRange(x, y) && this.map[x][y] === null;
-        const moves = [];
-        bundle.forEach(([x, y]) => {
-            player.dirs.forEach(([dx, dy]) => {
-                if (validMove(x + dx, y + dy)) { moves.push({ piece: [x, y], dir: [dx, dy] }); }
-            });
-        });
-        // const move = null;
-        // moves.push(...move)
-        return moves;
+        const validMove = (move) => {
+            // const [x, y] = move.to; // need to check from?
+            const [x, y] = move.to;
+            return this.checkRange(x, y) && this.map[x][y] instanceof NullPiece;
+        };
+        return bundle.map(([x, y]) => this.map[x][y].move())
+            .reduce((accumulator, currentValue) => accumulator.concat(currentValue), [])
+            .filter(validMove);
     }
 
-    movePiece(player, piece, dir) {
-        const validFrom = (x, y) => this.checkRange(x, y) && this.map[x][y] === player.name;
-        const validTo = (x, y) => this.checkRange(x, y) && this.map[x][y] === null;
-        const [x, y] = piece;
-        const [dx, dy] = dir;
-        if (validFrom(x, y) && validTo(x + dx, y + dy)) {
-            this.map[x][y] = null;
-            this.map[x + dx][y + dy] = player.name;
-        }
+    movePiece(player, move) {
+        // const validFrom = (x, y) => this.checkRange(x, y) && this.map[x][y].name === player.name;
+        // const validTo = (x, y) => this.checkRange(x, y) && this.map[x][y] instanceof NullPiece;
+
+        const [x1, y1] = move.from; const [x2, y2] = move.to;
+        this.map[x2][y2] = this.map[x1][y1];
+        this.map[x2][y2].pos = move.to;
+        this.map[x1][y1] = new NullPiece(x1, y1);
     }
 
     deleteBundle(player, bundle) {
-        bundle.forEach((piece) => { this.deletePiece(player, piece); });
+        bundle.forEach((pos) => { this.deletePiece(player, pos); });
     }
 
-    deletePiece(player, piece) {
-        const [x, y] = piece;
-        this.map[x][y] = null;
+    deletePiece(player, pos) {
+        console.log("delete piece", pos);
+        const [x, y] = pos;
+        this.map[x][y] = new NullPiece(x, y);
         player.pieces--;
     }
 
@@ -155,7 +184,7 @@ class ServerGameBoard {
 
     checkBaseEnter(player) {
         const y = player.name === "B" ? 0 : this.height - 1;
-        return range(this.width).some((i) => this.map[i][y] === player.name);
+        return range(this.width).some((i) => this.map[i][y]?.name === player.name);
     }
 }
 

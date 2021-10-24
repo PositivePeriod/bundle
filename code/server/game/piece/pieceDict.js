@@ -1,6 +1,8 @@
+const { NullPiece } = require("./nullPiece.js");
 const { Pawn, UpPawn, DownPawn, OrthogonalPawn, DiagonalPawn, AllPawn } = require("./pawn.js");
 
 const PieceData = [
+    [0, NullPiece],
     [10, Pawn],
     [11, UpPawn],
     [12, DownPawn],

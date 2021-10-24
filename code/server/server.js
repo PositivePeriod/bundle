@@ -22,6 +22,8 @@ const io = socketio(server);
 
 const gameBoard = new Map();
 
+const gameList = new Map();
+
 function alertSocket(gameID, type, msg) { io.to(gameID).emit("sendMSG", { type, msg }); }
 
 const DB = new ServerDB();
@@ -80,7 +82,7 @@ io.on("connect", async (socket) => {
                         if (socket.data.gameID) {
                             console.log("alertSocket disconnected", `Player ${socket.data.playerName} disconnected`);
                             alertSocket(socket.data.gameID, "alert", `Player ${socket.data.playerName} disconnected`);
-                            await lose(socket.data.gameID, socket.data.playerName);
+                            await gameList.get(socket.data.gameID).lose(socket.data.name);
                         }
                         if (publicGameQueue.includes(socket.id)) {
                             const index = publicGameQueue.indexOf(socket.id);
@@ -121,6 +123,7 @@ io.on("connect", async (socket) => {
         const send = callbackToSend(socket, "online", callback);
         if (!socket.data.registered) { send({ success: false, msg: "Not registered" }); return; }
         if (socket.data.online) { send({ success: false, msg: "Already online" }); return; }
+        // eslint-disable-next-line no-param-reassign
         socket.data.online = true;
         send({ success: true, msg: null });
         // make into class function
@@ -144,6 +147,7 @@ io.on("connect", async (socket) => {
             const [socketIDA, socketIDB] = [publicGameQueue.shift(), publicGameQueue.shift()];
 
             const game = new ServerGame(io, socketIDA, socketIDB);
+            gameList.set(game.id, game);
             await game.play();
         }
     });
@@ -182,7 +186,7 @@ io.on("connect", async (socket) => {
         if (socket.data.gameID) {
             console.log("alertSocket disconnected", `Player ${socket.data.playerName} disconnected`);
             alertSocket(socket.data.gameID, "alert", `Player ${socket.data.playerName} disconnected`);
-            await lose(socket.data.gameID, socket.data.playerName);
+            await gameList.get(socket.data.gameID).lose(socket.data.name);
         }
         if (publicGameQueue.includes(socket.id)) {
             const index = publicGameQueue.indexOf(socket.id);

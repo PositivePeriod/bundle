@@ -21,38 +21,38 @@ class ServerGame {
 
         this.width = 5;
         this.height = 5;
-
+        this.board = new ServerGameBoard(this.width, this.height, this.sockets[0], this.sockets[1]);
         this.DB = new ServerDB();
     }
 
     async play() {
         const alertSocket = function aS(gameID, type, msg) { this.io.to(gameID).emit("sendMSG", { type, msg }); }.bind(this);
-
-        this.board = new ServerGameBoard(this.width, this.height, this.sockets[0], this.sockets[1]);
         let bundle = this.board.findBundles(this.board.I)[0];
         while (!this.board.ended) {
             const [I, you] = [this.board.I, this.board.you];
             let moves = this.board.findBundleMove(I, bundle); // already chosen bundle
             if (moves.length === 0) {
+                console.log(bundle);
                 this.board.deleteBundle(I, bundle);
-                if (this.board.checkNoPiece(I)) { await this.win(this.id, you.playerName); return; }
+                if (this.board.checkNoPiece(I)) { await this.win(you.name); return; }
                 bundle = this.board.findPieces(I); // use all pieces as bundle in pieces
                 moves = this.board.findBundleMove(I, bundle);
-                if (moves.length === 0) { await this.win(this.id, you.playerName); return; }
+                if (moves.length === 0) { await this.win(you.name); return; }
             }
             this.board.color("need", "noNeed");
             this.board.colorBundle(I.name, bundle);
             this.show(this.id);
             alertSocket(this.id, "status", `Status : ${I.playerName} move piece`);
 
+            let move;
             if (moves.length === 1) {
                 alertSocket(this.id, "selectionAlert", "Select move automatically because the valid move is unique");
-                var { piece, dir } = moves[0];
+                move = moves[0];
             } else {
-                var { piece, dir } = await this.choose(I, "move", moves);
+                move = await this.choose(I, "move", moves);
             }
-            this.board.movePiece(I, piece, dir);
-            if (this.board.checkBaseEnter(I)) { await this.win(this.id, I.playerName); return; }
+            this.board.movePiece(I, move);
+            if (this.board.checkBaseEnter(I)) { await this.win(I.name); return; }
             this.board.color("light", "need");
             this.show(this.id);
             alertSocket(this.id, "status", `Status : ${I.playerName} select bundle`);
@@ -68,22 +68,17 @@ class ServerGame {
 
     show(gameID) {
         if (!this.board.ended) {
-            const data = {
-                turn: this.board.turn,
-                playerMap: this.board.map,
-                colorMap: this.board.colorMap,
-            };
-            this.io.to(gameID).emit("updateGame", data);
+            this.io.to(gameID).emit("updateGame", this.board.show());
         }
     }
 
-    async win(playerName) {
-        const { unknownNames, winnerNames, loserNames } = this.board.win(playerName);
+    async win(name) {
+        const { unknownNames, winnerNames, loserNames } = this.board.win(name);
         await this.finishGame(winnerNames, [...unknownNames, ...loserNames]); // only for 1vs1
     }
 
-    async lose(playerName) {
-        const { unknownNames, winnerNames, loserNames } = this.board.lose(playerName);
+    async lose(name) {
+        const { unknownNames, winnerNames, loserNames } = this.board.lose(name);
         await this.finishGame([...unknownNames, ...winnerNames], [...loserNames]); // only for 1vs1}
     }
 
@@ -132,6 +127,7 @@ class ServerGame {
             resolveFunc(chosenDatum[Math.floor(Math.random() * chosenDatum.length)]);
         });
         player.socket.emit("choose", { type, data: possibleData });
+        console.log("result", await result);
         return result;
     }
 }

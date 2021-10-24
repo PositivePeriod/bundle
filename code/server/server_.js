@@ -185,7 +185,7 @@ class Server {
         if (socket.data.gameID) {
             console.log("alertSocket disconnected", `Player ${socket.data.playerName} disconnected`);
             alertSocket(socket.data.gameID, "alert", `Player ${socket.data.playerName} disconnected`);
-            await lose(socket.data.gameID, socket.data.playerName);
+            await lose(socket.data.playerName);
         }
         if (publicGameQueue.includes(socket.id)) {
             const index = publicGameQueue.indexOf(socket.id);

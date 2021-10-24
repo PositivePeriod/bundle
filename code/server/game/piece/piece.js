@@ -6,7 +6,15 @@ class GamePiece {
     }
 
     get data() {
-        return new Map(["x", this.x], ["y", this.y]);
+        return { x: this.x, y: this.y };
+    }
+
+    set pos(newPos) {
+        [this.x, this.y] = newPos;
+    }
+
+    get pos() {
+        return [this.x, this.y];
     }
 
     // move() { }

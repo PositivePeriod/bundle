@@ -2,12 +2,12 @@
 const { GamePiece } = require("./piece.js");
 
 class Pawn extends GamePiece {
-    static dir = new Set();
-
     move(width, height) {
-        const valid = (x, y) => x >= 0 && x < width && y >= 0 && y < height;
-        const dir = Pawn.dir.filter(([dx, dy]) => valid(this.x + dx, this.y + dy));
-        return dir.map(([dx, dy]) => [this.x + dx, this.y + dy]);
+        // no validation
+        const { dir } = Object.getPrototypeOf(this).constructor;
+        console.log("dir", ...dir, this.x, this.y);
+        return [...dir].map(([dx, dy]) => (
+            { from: [this.x, this.y], to: [this.x + dx, this.y + dy] }));
     }
 }
 

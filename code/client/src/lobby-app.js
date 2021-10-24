@@ -63,49 +63,49 @@ class MultiApp {
     clickOff() { this.table.removeEventListener("click", this.handleClick.bind(this)); }
 
     handleClick(event) {
-        let x1;
-        let y1;
+        let x; let y;
         try {
             const td = event.target.closest("td");
-            [x1, y1] = [td.cellIndex, td.parentNode.rowIndex];
-            console.log("handleClick", x1, y1, this.wait.type);
+            [x, y] = [td.cellIndex, td.parentNode.rowIndex];
+            console.log("handleClick", x, y, this.wait.type);
         } catch (error) { if (error instanceof TypeError) { return; } throw error; }
         const compare = (a, b) => JSON.stringify(a) === JSON.stringify(b);
         switch (this.wait.type) {
             case "move":
-                if (this.board.map[x1][y1] === this.board.I.name) {
+                if (this.board.map[x][y] === this.board.I.name) {
                     const pieceInBundle = [...this.wait.data]
-                        .some((piece) => compare(piece.piece, [x1, y1]));
+                        .some((move) => compare(move.from, [x, y]));
+                    console.log("move1", this.wait.data, [x, y], pieceInBundle);
                     if (pieceInBundle) {
-                        this.pos = [x1, y1];
+                        this.pos = [x, y];
                         this.show("need", "noNeed");
                         this.showBundle(this.board.I.name,
-                            this.wait.data.map((move) => move.piece));
-                        setColor(this.table.rows[y1].cells[x1], `focus-${this.board.I.name}`);
+                            this.wait.data.map((move) => move.from));
+                        setColor(this.table.rows[y].cells[x], `focus-${this.board.I.name}`);
                     }
-                } else if (this.board.map[x1][y1] === null && this.pos) {
-                    const [x2, y2] = this.pos;
-                    if (this.pos && Math.abs(x1 - x2) + Math.abs(y1 - y2) === 1) {
-                        const chosenMove = { piece: this.pos, dir: [x1 - x2, y1 - y2] };
-                        if (this.wait.data.some((datum) => compare(datum, chosenMove))) {
-                            this.wait = { type: null };
-                            this.socket.emit("choose", chosenMove);
-                        }
-                        this.pos = null;
+                } else if (this.board.map[x][y] === null && this.pos) {
+                    console.log("move2");
+                    const chosenMove = { from: this.pos, to: [x, y] };
+                    if (this.wait.data.some((datum) => compare(datum, chosenMove))) {
+                        this.wait = { type: null };
+                        this.socket.emit("choose", chosenMove);
                     }
+                    this.pos = null;
                 } break;
             case "bundle":
-                if (this.board.map[x1][y1] === this.board.you.name) {
-                    const bundle = this.board.findBundleFromPos([x1, y1]);
+                if (this.board.map[x][y] === this.board.you.name) {
+                    console.log("bundle1");
+                    const bundle = this.board.findBundleFromPos([x, y]);
                     this.show("light", "need");
                     this.showBundle(this.board.you.name, bundle);
-                    if (JSON.stringify(this.pos) === JSON.stringify([x1, y1])) {
+                    if (JSON.stringify(this.pos) === JSON.stringify([x, y])) {
+                        console.log("bundle2");
                         const chosenBundle = bundle;
                         if (this.wait.data.some((datum) => {
                             datum.sort(); chosenBundle.sort();
                             return JSON.stringify(datum) === JSON.stringify(chosenBundle);
                         })) { this.wait = { type: null }; this.socket.emit("choose", chosenBundle); }
-                    } else { this.pos = [x1, y1]; }
+                    } else { this.pos = [x, y]; }
                 } break;
             case null: break;
             default: console.log("Error", this.wait.type); break;
