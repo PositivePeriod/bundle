@@ -9,6 +9,7 @@ const { ServerGame } = require("./src/game.js");
 
 const app = express();
 app.use("/", express.static(path.join(__dirname, "../client")));
+app.use("/static", express.static(path.join(__dirname, "../static")));
 
 require("dotenv").config();
 // 404 처리

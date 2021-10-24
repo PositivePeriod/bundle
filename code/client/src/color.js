@@ -17,7 +17,10 @@ const Color = new Map([
 ]);
 
 function setColor(element, colorName) {
-    element.className = colorName;
+    // this.setCellStatus(pos, status);
+    element.className = "";
+    element.classList.add(colorName);
+    element.classList.add("UpPawn");
     element.style.background = `#${Color.has(colorName) ? Color.get(colorName) : floor}`;
 }
 

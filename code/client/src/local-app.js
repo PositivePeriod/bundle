@@ -1,5 +1,6 @@
 import ClientGameBoard from "./local-board.js";
 import setColor from "./color.js";
+import { ClientGameMap } from "./clientGameMap.js";
 
 class LocalApp {
     constructor() {
@@ -9,24 +10,27 @@ class LocalApp {
         this.wait = { type: null, func: null, data: null };
         this.pos = null;
 
-        this.make();
+        this.map = new ClientGameMap();
+
+        this.table.addEventListener("click", this.handleClick.bind(this));
+        // this.table.removeEventListener("click", this.handleClick.bind(this));
+
         this.play();
     }
 
-    make() {
-        this.table = document.createElement("table");
-        this.table.setAttribute("id", "game-map");
-        for (let i = 0; i < this.width; i++) {
-            const row = this.table.insertRow(i);
-            for (let j = 0; j < this.height; j++) { row.insertCell(j); }
-        }
-        document.getElementById("playingGameFrame").appendChild(this.table);
-        this.clickOn();
-    }
-
     show(IColor, youColor) {
-        const myName = this.board.I.name;
         document.getElementById("turn").innerText = `Turn : ${this.board.turn}`;
+
+        // const myName = this.board.I.name;
+        // for (let i = 0; i < this.width; i++) {
+        //     for (let j = 0; j < this.height; j++) {
+        //         const status = this.board.map[i][j] === myName ? IColor : youColor;
+        //         this.map.setCellStatus([i, j], color);
+        //         this.map.setCellName([i, j], this.board.map[i][j]);
+        //     }
+        // }
+
+        const myName = this.board.I.name;
         for (let i = 0; i < this.width; i++) {
             for (let j = 0; j < this.height; j++) {
                 const cell = this.table.rows[j].cells[i];
@@ -37,6 +41,9 @@ class LocalApp {
     }
 
     showBundle(playerName, bundle) {
+        // this.map.setBundleName(bundle, playerName);
+        // this.map.setBundleStatus(bundle, "choice");
+
         bundle.forEach(([x, y]) => {
             const cell = this.table.rows[y].cells[x];
             setColor(cell, `choice-${playerName}`);
@@ -114,21 +121,14 @@ class LocalApp {
         });
     }
 
-    clickOn() { this.table.addEventListener("click", this.handleClick.bind(this)); }
-
-    clickOff() { this.table.removeEventListener("click", this.handleClick.bind(this)); }
-
     handleClick(event) {
-        let x1;
-        let y1;
-        try {
-            const td = event.target.closest("td");
-            [x1, y1] = [td.cellIndex, td.parentNode.rowIndex];
-        } catch (error) { if (error instanceof TypeError) { return; } throw error; }
+        const td = event.target.closest("td");
+        const [x1, y1] = [td.cellIndex, td.parentNode.rowIndex];
         switch (this.wait.type) {
             case "move":
                 if (this.board.map[x1][y1] === this.board.I.name) {
-                    const pieceInBundle = [...this.bundle].some((piece) => JSON.stringify(piece) === JSON.stringify([x1, y1]));
+                    const pieceInBundle = [...this.bundle]
+                        .some((piece) => JSON.stringify(piece) === JSON.stringify([x1, y1]));
                     if (pieceInBundle) {
                         this.pos = [x1, y1];
                         this.show("need", "noNeed");
@@ -161,6 +161,7 @@ class LocalApp {
         }
     }
 
+    // eslint-disable-next-line class-methods-use-this
     win(player) {
         document.getElementById("status").innerText = `Status : ${player.playerName} win`;
         document.getElementById("backToLobby").onclick = () => {

@@ -70,6 +70,36 @@ a {
     cursor: pointer;
 }
 
+
+#game-map td  {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 50%;
+  fill: blue;
+  stroke: blue;
+}
+
+#game-map td.AllPawn {
+    background-image: url("/static/assets/AllPawn.svg");
+}
+
+#game-map td.DiagonalPawn {
+  background-image: url("/static/assets/DiagonalPawn.svg");
+}
+
+#game-map td.OrthogonalPawn {
+    background-image: url("/static/assets/OrthogonalPawn.svg");
+}
+
+#game-map td.UpPawn {
+  background-image: url("/static/assets/UpPawn.svg");
+}
+
+#game-map td.DownPawn {
+    background-image: url("/static/assets/UpPawn.svg");
+    transform: rotate(180deg);
+  }
+
 .log{
     background-color: black;
     color: white;
