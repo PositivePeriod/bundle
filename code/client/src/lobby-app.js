@@ -1,5 +1,5 @@
 import ClientGameBoard from "./board.js";
-import setColor from "./color.js";
+import { ClientGameMap } from "./clientGameMap.js";
 
 class MultiApp {
     constructor(socket, playerAName, playerBName) {
@@ -11,21 +11,13 @@ class MultiApp {
         this.socket = socket;
         this.board = new ClientGameBoard(this.width, this.height, playerAName, playerBName);
 
-        this.initDOM();
-        this.clickOn();
-    }
-
-    initDOM() {
-        this.table = document.createElement("table");
-        this.table.setAttribute("id", "game-map");
-        for (let i = 0; i < this.width; i++) {
-            const row = this.table.insertRow(i);
-            for (let j = 0; j < this.height; j++) { row.insertCell(j); }
-        }
-        document.getElementById("playingGameFrame").appendChild(this.table);
+        this.map = new ClientGameMap(this.width, this.height);
+        this.map.table.addEventListener("click", this.handleClick.bind(this));
+        // this.map.table.removeEventListener("click", this.handleClick.bind(this));
     }
 
     update(turn, playerMap, colorMap) {
+        console.log(playerMap, colorMap);
         this.board.turn = turn;
         document.getElementById("turn").innerText = `Turn : ${turn}`;
 
@@ -33,58 +25,63 @@ class MultiApp {
         this.board.colorMap = colorMap;
         for (let i = 0; i < this.width; i++) {
             for (let j = 0; j < this.height; j++) {
-                const cell = this.table.rows[j].cells[i];
-                cell.innerText = this.board.map[i][j];
-                setColor(cell, this.board.colorMap[i][j]);
+                const cell = this.map.table.rows[j].cells[i];
+                const name = this.board.map[i][j];
+                const status = this.board.colorMap[i][j];
+                cell.innerText = name;
+                this.map.setCellPiece([i, j], "UpPawn");
+                this.setColor([i, j], status, name);
             }
         }
     }
 
+    setColor(pos, status, name) {
+        this.map.setCellStatus(pos, status);
+        this.map.setCellName(pos, name);
+        this.map.updateCell(pos);
+    }
+
     show(IColor, youColor) {
+        document.getElementById("turn").innerText = `Turn : ${this.board.turn}`;
+
         const myName = this.board.I.name;
         for (let i = 0; i < this.width; i++) {
             for (let j = 0; j < this.height; j++) {
-                const cell = this.table.rows[j].cells[i];
-                cell.innerText = this.board.map[i][j];
-                setColor(cell, `${this.board.map[i][j] === myName ? IColor : youColor}-${this.board.map[i][j]}`);
+                const status = this.board.map[i][j] === myName ? IColor : youColor;
+                this.map.setCellStatus([i, j], status);
+                this.map.setCellName([i, j], this.board.map[i][j]);
+                this.map.updateCell([i, j]);
             }
         }
     }
 
     showBundle(playerName, bundle) {
-        bundle.forEach(([x, y]) => {
-            const cell = this.table.rows[y].cells[x];
-            setColor(cell, `choice-${playerName}`);
-        });
+        this.map.setBundleName(bundle, playerName);
+        this.map.setBundleStatus(bundle, "choice");
+        this.map.updateBundle(bundle);
     }
 
-    clickOn() { this.table.addEventListener("click", this.handleClick.bind(this)); }
-
-    clickOff() { this.table.removeEventListener("click", this.handleClick.bind(this)); }
-
     handleClick(event) {
-        let x; let y;
+        let x;
+        let y;
         try {
             const td = event.target.closest("td");
             [x, y] = [td.cellIndex, td.parentNode.rowIndex];
-            console.log("handleClick", x, y, this.wait.type);
-        } catch (error) { if (error instanceof TypeError) { return; } throw error; }
+        } catch (e) { console.error(e); }
         const compare = (a, b) => JSON.stringify(a) === JSON.stringify(b);
         switch (this.wait.type) {
             case "move":
                 if (this.board.map[x][y] === this.board.I.name) {
                     const pieceInBundle = [...this.wait.data]
                         .some((move) => compare(move.from, [x, y]));
-                    console.log("move1", this.wait.data, [x, y], pieceInBundle);
                     if (pieceInBundle) {
                         this.pos = [x, y];
                         this.show("need", "noNeed");
-                        this.showBundle(this.board.I.name,
-                            this.wait.data.map((move) => move.from));
-                        setColor(this.table.rows[y].cells[x], `focus-${this.board.I.name}`);
+                        const bundle = this.wait.data.map((move) => move.from);
+                        this.showBundle(this.board.I.name, bundle);
+                        this.setColor([x, y], "focus", this.board.I.name);
                     }
                 } else if (this.board.map[x][y] === null && this.pos) {
-                    console.log("move2");
                     const chosenMove = { from: this.pos, to: [x, y] };
                     if (this.wait.data.some((datum) => compare(datum, chosenMove))) {
                         this.wait = { type: null };
@@ -94,12 +91,10 @@ class MultiApp {
                 } break;
             case "bundle":
                 if (this.board.map[x][y] === this.board.you.name) {
-                    console.log("bundle1");
                     const bundle = this.board.findBundleFromPos([x, y]);
                     this.show("light", "need");
                     this.showBundle(this.board.you.name, bundle);
                     if (JSON.stringify(this.pos) === JSON.stringify([x, y])) {
-                        console.log("bundle2");
                         const chosenBundle = bundle;
                         if (this.wait.data.some((datum) => {
                             datum.sort(); chosenBundle.sort();

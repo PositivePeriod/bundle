@@ -1,5 +1,4 @@
 import ClientGameBoard from "./local-board.js";
-import setColor from "./color.js";
 import { ClientGameMap } from "./clientGameMap.js";
 
 class LocalApp {
@@ -21,33 +20,24 @@ class LocalApp {
     show(IColor, youColor) {
         document.getElementById("turn").innerText = `Turn : ${this.board.turn}`;
 
-        // const myName = this.board.I.name;
-        // for (let i = 0; i < this.width; i++) {
-        //     for (let j = 0; j < this.height; j++) {
-        //         const status = this.board.map[i][j] === myName ? IColor : youColor;
-        //         this.map.setCellStatus([i, j], color);
-        //         this.map.setCellName([i, j], this.board.map[i][j]);
-        //     }
-        // }
-
         const myName = this.board.I.name;
         for (let i = 0; i < this.width; i++) {
             for (let j = 0; j < this.height; j++) {
-                const cell = this.table.rows[j].cells[i];
-                cell.innerText = this.board.map[i][j];
-                setColor(cell, `${this.board.map[i][j] === myName ? IColor : youColor}-${this.board.map[i][j]}`);
+                const status = this.board.map[i][j] === myName ? IColor : youColor;
+                this.map.setCellStatus([i, j], status);
+                this.map.setCellName([i, j], this.board.map[i][j]);
             }
         }
     }
 
     showBundle(playerName, bundle) {
-        // this.map.setBundleName(bundle, playerName);
-        // this.map.setBundleStatus(bundle, "choice");
+        this.map.setBundleName(bundle, playerName);
+        this.map.setBundleStatus(bundle, "choice");
+    }
 
-        bundle.forEach(([x, y]) => {
-            const cell = this.table.rows[y].cells[x];
-            setColor(cell, `choice-${playerName}`);
-        });
+    setColor(pos, status, name) {
+        this.map.setCellStatus(pos, status);
+        this.map.setCellName(pos, name);
     }
 
     async play() {
@@ -133,7 +123,7 @@ class LocalApp {
                         this.pos = [x1, y1];
                         this.show("need", "noNeed");
                         this.showBundle(this.board.I.name, this.bundle);
-                        setColor(this.table.rows[y1].cells[x1], `focus-${this.board.I.name}`);
+                        this.setColor([x1, y1], "focus", this.board.I.name);
                     }
                 } else if (this.board.map[x1][y1] === null && this.pos) {
                     const [x2, y2] = this.pos;

@@ -87,13 +87,13 @@ class ServerGameBoard {
     color(IColor, youColor) {
         for (let i = 0; i < this.width; i++) {
             for (let j = 0; j < this.height; j++) {
-                this.colorMap[i][j] = `${this.map[i][j].name === this.I.name ? IColor : youColor}-${this.map[i][j].name}`;
+                this.colorMap[i][j] = this.map[i][j].name === this.I.name ? IColor : youColor;
             }
         }
     }
 
     colorBundle(playerName, bundle) {
-        bundle.forEach(([x, y]) => { this.colorMap[x][y] = `choice-${playerName}`; });
+        bundle.forEach(([x, y]) => { this.colorMap[x][y] = "choice"; });
     }
 
     nextTurn() { this.turn++; }

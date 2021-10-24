@@ -13,7 +13,7 @@ export class ClientGameMap {
 
         this.names = ["A", "B"];
         this.statuses = ["noNeed", "light", "need", "choice", "focus"];
-        this.pieceDict = new Map();
+        this.pieceDict = new Map([]);
     }
 
     makeTable() {
@@ -34,6 +34,10 @@ export class ClientGameMap {
         classList.add(pieceName, name, status);
     }
 
+    updateBundle(bundle) {
+        bundle.forEach((pos) => { this.updateCell(pos); });
+    }
+
     updateAll() {
         for (let i = 0; i < this.width; i++) {
             for (let j = 0; j < this.height; j++) { this.updateCell([i, j]); }
@@ -42,7 +46,8 @@ export class ClientGameMap {
 
     setCellPiece(pos, pieceID) {
         const [x, y] = pos;
-        const pieceName = this.pieceDict.get(pieceID);
+        // const pieceName = this.pieceDict.get(pieceID);
+        const pieceName = pieceID;
         this.cellData[x][y].pieceName = pieceName;
     }
 
