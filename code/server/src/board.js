@@ -1,6 +1,6 @@
 const { range, Array2D } = require("../../shared/util.js");
 const { NullPiece } = require("../game/piece/nullPiece.js");
-const { UpPawn, DownPawn } = require("../game/piece/pawn.js");
+const { UpPawn, DownPawn, AllPawn } = require("../game/piece/pawn.js");
 
 class ServerGameBoard {
     constructor(width, height, socketA, socketB) {
@@ -42,6 +42,8 @@ class ServerGameBoard {
             this.map[i][0] = new UpPawn("A", i, 0);
             this.map[i][this.height - 1] = new DownPawn("B", i, this.height - 1);
         }
+        this.map[3][1] = new AllPawn("A", 3, 1);
+        this.map[3][this.height - 2] = new AllPawn("B", 3, this.height - 2);
         this.ended = false;
     }
 

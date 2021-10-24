@@ -5,7 +5,6 @@ class Pawn extends GamePiece {
     move(width, height) {
         // no validation
         const { dir } = Object.getPrototypeOf(this).constructor;
-        console.log("dir", ...dir, this.x, this.y);
         return [...dir].map(([dx, dy]) => (
             { from: [this.x, this.y], to: [this.x + dx, this.y + dy] }));
     }
