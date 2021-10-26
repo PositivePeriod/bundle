@@ -10,15 +10,14 @@ const { ServerGame } = require("./src/game.js");
 const app = express();
 app.use("/", express.static(path.join(__dirname, "../client")));
 app.use("/static", express.static(path.join(__dirname, "../static")));
+app.get("/", (req, res, next) => { res.redirect("./page"); });
 
 require("dotenv").config();
 // 404 처리
 const port = process.env.PORT || 5000;
 const isDev = process.env.NODE_ENV === "development";
 const page = isDev ? `http://localhost:${port}/` : "https://bundle-game.herokuapp.com/";
-const server = app.listen(port, () => {
-    console.log(`Bundle : ${page}`);
-});
+const server = app.listen(port, () => { console.log(`Bundle : ${page}`); });
 const io = socketio(server);
 
 const gameBoard = new Map();

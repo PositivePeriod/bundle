@@ -11,7 +11,6 @@ class ServerGameBoard {
         this.players = [
             {
                 name: "A",
-                dirs: [[1, 0], [-1, 0], [0, 1]],
                 pieces: this.width,
                 socket: socketA,
                 playerName: socketA.data.playerName,
@@ -19,7 +18,6 @@ class ServerGameBoard {
             },
             {
                 name: "B",
-                dirs: [[1, 0], [-1, 0], [0, -1]],
                 pieces: this.width,
                 socket: socketB,
                 playerName: socketB.data.playerName,
