@@ -20,8 +20,6 @@ const page = isDev ? `http://localhost:${port}/` : "https://bundle-game.herokuap
 const server = app.listen(port, () => { console.log(`Bundle : ${page}`); });
 const io = socketio(server);
 
-const gameBoard = new Map();
-
 const gameList = new Map();
 
 function alertSocket(gameID, type, msg) { io.to(gameID).emit("sendMSG", { type, msg }); }

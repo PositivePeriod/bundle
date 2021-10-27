@@ -20,7 +20,7 @@ class ServerGameMap {
             // maxium 14 players; since N is already used for null
             const name = cell.substring(1);
             const Piece = IDtoPiece(parseInt(cell.substring(1), 10));
-            return Piece === null ? null : new Piece(name, );
+            return Piece === null ? null : new Piece(name);
         }));
     }
 

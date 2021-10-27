@@ -15,26 +15,29 @@ class Server {
     constructor() {
         this.app = express();
         const clientPath = path.join(__dirname, "../client");
+        const staticPath = path.join(__dirname, "../static");
         this.app.use("/", express.static(clientPath));
+        this.app.use("/static", express.static(staticPath));
+        this.app.get("/", (req, res, next) => { res.redirect("./page"); });
 
         const isDev = process.env.NODE_ENV === "development";
         const port = process.env.PORT || 5000;
         const page = isDev ? `http://localhost:${port}/` : "https://bundle-game.herokuapp.com/";
-        const server = this.app.listen(port, () => {
-            // eslint-disable-next-line no-console
-            console.log(`Playing Bundle on ${page}`);
-        });
+        const server = this.app.listen(port, () => { console.log(`Playing Bundle on ${page}`); });
         this.io = socketio(server);
 
         this.isValid = new Validator();
 
         this.DB = new ServerDB();
-        this.onlineSockets = new AsyncSet(); // Array[socketID]
-        this.publicGameQueue = new AsyncQueue(); // Array[socketID] waiting for game
-        const q = async.queue((task, callback) => {
-            console.log(`hello ${task.name}`);
-            callback();
-        }, 2);
+        this.onlineSockets = new Set(); // Array[socketID]
+        this.publicGameQueue = [];    // Array[socketID] waiting for game
+
+        const gameList = new Map();
+
+        function alertSocket(gameID, type, msg) { io.to(gameID).emit("sendMSG", { type, msg }); }
+        const sendTosendError = (send) => (msg) => { console.log("Error", msg); send({ success: false, msg: "Server Problem" }); };
+
+        this.bind();
     }
 
     bind() {
@@ -90,7 +93,7 @@ class Server {
         if (!existsName.success) { sendError("Errno : #201"); return; }
         if (existsName.data) { send({ success: false, data: "Existent playerName" }); return; }
 
-        // Add email register
+        // TODO - Add email register
         const playerID = nanoid();
         const setPlayer = await DB.setPlayer({ playerName, playerID });
         if (!setPlayer.success) { sendError("Errno : #202"); return; }
@@ -152,6 +155,16 @@ class Server {
         io.to(gameID).emit("startGame", { id: gameID, players: [socketA.data.playerName, socketB.data.playerName] });
         new ServerGame()
         await play(gameID, socketA, socketB);
+
+        // if (publicGameQueue.length >= 2) {
+        //     // 가능하다면 async.queue로 바꾸기
+        //     // 낮은 확률로 3에서 1로 되면서 parallel 문제?, 병렬 문제도... queue 스스로 빼는 것이 나을 듯
+        //     const [socketIDA, socketIDB] = [publicGameQueue.shift(), publicGameQueue.shift()];
+
+        //     const game = new ServerGame(io, socketIDA, socketIDB);
+        //     gameList.set(game.id, game);
+        //     await game.play();
+        // }
     }
 
     async leavePublicGame() {
@@ -185,7 +198,7 @@ class Server {
         if (socket.data.gameID) {
             console.log("alertSocket disconnected", `Player ${socket.data.playerName} disconnected`);
             alertSocket(socket.data.gameID, "alert", `Player ${socket.data.playerName} disconnected`);
-            await lose(socket.data.playerName);
+            await lose(vsocket.data.playerName);
         }
         if (publicGameQueue.includes(socket.id)) {
             const index = publicGameQueue.indexOf(socket.id);

@@ -4,4 +4,6 @@ class Player {
         this.playerName = info.playerName;
         this.result = null;
     }
+
+    setSocket
 }
