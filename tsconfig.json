@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "lib": [
+            "es6"
+        ],
+        "module": "commonjs",
+        "types": [
+            "node"
+        ],
+        "outDir": "build",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "ts/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "build"
+    ]
+}
